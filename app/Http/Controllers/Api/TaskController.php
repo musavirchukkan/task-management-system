@@ -35,39 +35,23 @@ class TaskController extends Controller
     /**
      * Display a listing of tasks.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
-        try {
-            $filters = $request->only([
-                'status',
-                'assigned_to',
-                'created_by',
-                'due_date',
-                'search',
-                'sort_by',
-                'sort_direction'
-            ]);
+        $filters = $request->only([
+            'status',
+            'assigned_to',
+            'created_by',
+            'due_date',
+            'search',
+            'sort_by',
+            'sort_direction'
+        ]);
 
-            $perPage = $request->input('per_page', 15);
+        $perPage = $request->input('per_page', 15);
 
-            $tasks = $this->taskService->getTasks($filters, $perPage);
+        $tasks = $this->taskService->getTasks($filters, $perPage);
 
-            return response()->json([
-                'data' => TaskResource::collection($tasks),
-                'message' => 'Tasks retrieved successfully'
-            ]);
-        } catch (Exception $e) {
-            Log::error('Failed to retrieve tasks', [
-                'exception' => $e->getMessage(),
-                'filters' => $filters ?? [],
-                'user_id' => $request->user()?->id
-            ]);
-
-            return response()->json([
-                'message' => 'Unable to retrieve tasks',
-                'error' => 'An unexpected error occurred'
-            ], 500);
-        }
+        return TaskResource::collection($tasks);
     }
 
     /**
