@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Interfaces\TaskServiceInterface;
+use App\Services\TaskService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +13,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Bind TaskServiceInterface to TaskService implementation
+        $this->app->bind(TaskServiceInterface::class, TaskService::class);
     }
 
     /**

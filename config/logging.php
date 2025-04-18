@@ -127,6 +127,20 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'request_time' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/request/request_time.log'),
+            'level' => 'info',
+            'days' => 14, // Keep logs for 14 days
+        ],
+
+        'task_log' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/task/task.log'),
+            'level' => 'info',
+            'days' => 14, // Keep logs for 14 days
+        ],
+
     ],
 
 ];
