@@ -9,9 +9,13 @@ use App\Http\Requests\TaskCreateRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use App\Services\Interfaces\TaskServiceInterface;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 class TaskController extends Controller
 {
@@ -30,32 +34,42 @@ class TaskController extends Controller
 
     /**
      * Display a listing of tasks.
-     *
-     * @param Request $request
-     * @return AnonymousResourceCollection
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): JsonResponse
     {
-        $filters = $request->only([
-            'status',
-            'assigned_to',
-            'search',
-            'sort_by',
-            'sort_direction'
-        ]);
+        try {
+            $filters = $request->only([
+                'status',
+                'assigned_to',
+                'search',
+                'sort_by',
+                'sort_direction'
+            ]);
 
-        $perPage = $request->input('per_page', 15);
+            $perPage = $request->input('per_page', 15);
 
-        $tasks = $this->taskService->getTasks($filters, $perPage);
+            $tasks = $this->taskService->getTasks($filters, $perPage);
 
-        return TaskResource::collection($tasks);
+            return response()->json([
+                'data' => TaskResource::collection($tasks),
+                'message' => 'Tasks retrieved successfully'
+            ]);
+        } catch (Exception $e) {
+            Log::error('Failed to retrieve tasks', [
+                'exception' => $e->getMessage(),
+                'filters' => $filters ?? [],
+                'user_id' => $request->user()?->id
+            ]);
+
+            return response()->json([
+                'message' => 'Unable to retrieve tasks',
+                'error' => 'An unexpected error occurred'
+            ], 500);
+        }
     }
 
     /**
      * Store a newly created task.
-     *
-     * @param TaskCreateRequest $request
-     * @return JsonResponse
      */
     public function store(TaskCreateRequest $request): JsonResponse
     {
@@ -69,20 +83,22 @@ class TaskController extends Controller
                 'message' => 'Task created successfully',
                 'task' => new TaskResource($task)
             ], 201);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            Log::error('Task creation failed', [
+                'exception' => $e->getMessage(),
+                'data' => $request->except(['_token']),
+                'user_id' => $request->user()?->id
+            ]);
+
             return response()->json([
                 'message' => 'Failed to create task',
-                'error' => $e->getMessage()
+                'error' => 'An unexpected error occurred'
             ], 500);
         }
     }
 
     /**
      * Assign a task to a user.
-     *
-     * @param TaskAssignRequest $request
-     * @param int $id
-     * @return JsonResponse
      */
     public function assign(TaskAssignRequest $request, int $id): JsonResponse
     {
@@ -95,20 +111,32 @@ class TaskController extends Controller
                 'message' => 'Task assigned successfully',
                 'task' => new TaskResource($task)
             ]);
-        } catch (\Exception $e) {
+        } catch (ModelNotFoundException $e) {
+            Log::warning('Task not found during assignment', [
+                'task_id' => $id,
+                'assigned_by' => $request->user()?->id
+            ]);
+
+            return response()->json([
+                'message' => 'Task not found',
+            ], 404);
+        } catch (Exception $e) {
+            Log::error('Task assignment failed', [
+                'exception' => $e->getMessage(),
+                'task_id' => $id,
+                'user_id' => $request->validated()['user_id'] ?? null,
+                'assigned_by' => $request->user()?->id
+            ]);
+
             return response()->json([
                 'message' => 'Failed to assign task',
-                'error' => $e->getMessage()
+                'error' => 'An unexpected error occurred'
             ], 500);
         }
     }
 
     /**
      * Mark a task as completed.
-     *
-     * @param TaskCompleteRequest $request
-     * @param int $id
-     * @return JsonResponse
      */
     public function complete(TaskCompleteRequest $request, int $id): JsonResponse
     {
@@ -120,28 +148,68 @@ class TaskController extends Controller
                 'message' => 'Task completed successfully',
                 'task' => new TaskResource($task)
             ]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (ModelNotFoundException $e) {
+            Log::warning('Task not found during completion', [
+                'task_id' => $id,
+                'completed_by' => $request->user()?->id
+            ]);
+
             return response()->json([
-                'message' => 'Failed to complete task',
+                'message' => 'Task not found',
+            ], 404);
+        } catch (InvalidArgumentException $e) {
+            Log::warning('Invalid task completion attempt', [
+                'exception' => $e->getMessage(),
+                'task_id' => $id,
+                'completed_by' => $request->user()?->id
+            ]);
+
+            return response()->json([
+                'message' => 'Cannot complete task',
                 'error' => $e->getMessage()
             ], 400);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            Log::error('Task completion failed', [
+                'exception' => $e->getMessage(),
+                'task_id' => $id,
+                'completed_by' => $request->user()?->id
+            ]);
+
             return response()->json([
                 'message' => 'Failed to complete task',
-                'error' => $e->getMessage()
+                'error' => 'An unexpected error occurred'
             ], 500);
         }
     }
 
     /**
      * Display the specified task.
-     *
-     * @param  int $id
-     * @return TaskResource
      */
-    public function show(int $id): TaskResource
+    public function show(int $id): JsonResponse
     {
-        $task = Task::findOrFail($id);
-        return new TaskResource($task->load('assignedUser'));
+        try {
+            $task = Task::findOrFail($id);
+            return response()->json([
+                'task' => new TaskResource($task->load('assignedUser'))
+            ]);
+        } catch (ModelNotFoundException $e) {
+            Log::warning('Task not found during retrieval', [
+                'task_id' => $id
+            ]);
+
+            return response()->json([
+                'message' => 'Task not found',
+            ], 404);
+        } catch (Exception $e) {
+            Log::error('Task retrieval failed', [
+                'exception' => $e->getMessage(),
+                'task_id' => $id
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to retrieve task',
+                'error' => 'An unexpected error occurred'
+            ], 500);
+        }
     }
 }

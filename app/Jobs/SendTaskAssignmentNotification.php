@@ -46,7 +46,7 @@ class SendTaskAssignmentNotification implements ShouldQueue
     {
         // In a real application, you would send an actual email here
         // For this example, we'll just log it
-        Log::info('Task assignment notification sent', [
+        Log::channel('task_log')->info('Task assignment notification sent', [
             'task_id' => $this->task->id,
             'task_title' => $this->task->title,
             'user_id' => $this->user->id,

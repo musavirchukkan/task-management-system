@@ -137,7 +137,7 @@ class TaskService implements TaskServiceInterface
                 $task->status = Task::STATUS_EXPIRED;
                 $task->save();
 
-                Log::info("Task #{$task->id} marked as expired (due date: {$task->due_date})");
+                Log::channel('task_log')->info("Task #{$task->id} marked as expired (due date: {$task->due_date})");
             }
 
             return $overdueTasks;
