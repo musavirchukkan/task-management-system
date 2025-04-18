@@ -25,6 +25,10 @@ class TaskResource extends JsonResource
             'assigned_user' => $this->whenLoaded('assignedUser', function () {
                 return new UserResource($this->assignedUser);
             }),
+            'created_by' => $this->created_by,
+            'created_user' => $this->whenLoaded('createdUser', function () {
+                return new UserResource($this->createdUser);
+            }),
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),
             // Adding HATEOAS links

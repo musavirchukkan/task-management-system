@@ -49,6 +49,14 @@ class Task extends Model
     }
 
     /**
+     * Get the user that created the task.
+     */
+    public function createdUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
      * Scope a query to only include pending tasks.
      */
     public function scopePending($query)

@@ -27,9 +27,22 @@ class TaskService implements TaskServiceInterface
             $data['status'] = Task::STATUS_PENDING;
         }
 
-        return DB::transaction(function () use ($data) {
-            return Task::create($data);
+        $task = DB::transaction(function () use ($data) {
+            return  Task::create($data);
         });
+
+        if (isset($data['assigned_to'])) {
+            // Check if user exists
+            $user = User::find($data['assigned_to']);
+        }
+
+        $task->load('assignedUser', 'createdUser');
+
+        if ($user) {
+            // Dispatch job to send notification
+            SendTaskAssignmentNotification::dispatch($task, $user);
+        }
+        return $task;
     }
 
     /**
@@ -49,6 +62,7 @@ class TaskService implements TaskServiceInterface
             $task->assigned_to = $userId;
             $task->save();
 
+            $task->load('assignedUser', 'createdUser');
             // Dispatch job to send notification
             SendTaskAssignmentNotification::dispatch($task, $user);
 
@@ -103,6 +117,14 @@ class TaskService implements TaskServiceInterface
             $query->where('assigned_to', $filters['assigned_to']);
         }
 
+        if (isset($filters['created_by'])) {
+            $query->where('created_by', $filters['created_by']);
+        }
+
+        if (isset($filters['due_date'])) {
+            $query->whereDate('due_date', $filters['due_date']);
+        }
+
         if (isset($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
@@ -120,7 +142,7 @@ class TaskService implements TaskServiceInterface
         $sortDirection = strtolower($filters['sort_direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
         $query->orderBy($sortField, $sortDirection);
 
-        return $query->with('assignedUser')->paginate($perPage);
+        return $query->with(['assignedUser', 'createdUser'])->paginate($perPage);
     }
 
     /**

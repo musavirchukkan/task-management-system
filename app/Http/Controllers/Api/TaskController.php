@@ -41,6 +41,8 @@ class TaskController extends Controller
             $filters = $request->only([
                 'status',
                 'assigned_to',
+                'created_by',
+                'due_date',
                 'search',
                 'sort_by',
                 'sort_direction'
@@ -75,7 +77,10 @@ class TaskController extends Controller
     {
         try {
             $data = $request->validated();
-            $data['created_by'] = $request->user()->id;
+
+            if (!isset($data['created_by'])) {
+                $data['created_by'] = $request->user()->id;
+            }
 
             $task = $this->taskService->createTask($data);
 
@@ -190,7 +195,7 @@ class TaskController extends Controller
         try {
             $task = Task::findOrFail($id);
             return response()->json([
-                'task' => new TaskResource($task->load('assignedUser'))
+                'task' => new TaskResource($task->load(['assignedUser', 'createdUser'])),
             ]);
         } catch (ModelNotFoundException $e) {
             Log::warning('Task not found during retrieval', [
