@@ -97,7 +97,7 @@ class TaskService implements TaskServiceInterface
         $query = Task::query();
 
         // Apply filters
-        if (isset($filters['status']) && in_array($filters['status'], TaskStatus::values())) {
+        if (isset($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 

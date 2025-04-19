@@ -11,6 +11,18 @@ class TaskPolicy
     use HandlesAuthorization;
 
     /**
+     * Determine whether the user can view any tasks.
+     *
+     * @param  \App\Models\User  $user
+     * @return bool
+     */
+    public function viewAny(User $user)
+    {
+        // By default, allow any authenticated user to view tasks
+        return true;
+    }
+
+    /**
      * Determine whether the user can create tasks.
      *
      * @param  \App\Models\User  $user

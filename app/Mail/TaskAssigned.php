@@ -53,8 +53,14 @@ class TaskAssigned extends Mailable
             Carbon::parse($this->task->due_date)->format('F j, Y g:i A') :
             'No due date';
 
-        // Get status with proper capitalization
-        $status = ucfirst($this->task->status ?? TaskStatus::default()->value);
+        // Get status with proper capitalization - fixed for enum handling
+        if ($this->task->status instanceof TaskStatus) {
+            // If it's an enum instance, get its value first
+            $status = ucfirst($this->task->status->value);
+        } else {
+            // If it's a string or null
+            $status = ucfirst($this->task->status ?? TaskStatus::default()->value);
+        }
 
         // Assign priority based on due date proximity if not explicitly set
         $priority = $this->task->priority ?? $this->calculatePriority();

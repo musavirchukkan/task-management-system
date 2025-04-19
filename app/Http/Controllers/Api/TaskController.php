@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskAssignRequest;
 use App\Http\Requests\TaskCompleteRequest;
 use App\Http\Requests\TaskCreateRequest;
+use App\Http\Requests\TaskIndexRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use App\Services\Interfaces\TaskServiceInterface;
@@ -36,8 +37,9 @@ class TaskController extends Controller
     /**
      * Display a listing of tasks.
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(TaskIndexRequest $request): AnonymousResourceCollection
     {
+
         $filters = $request->only([
             'status',
             'assigned_to',
@@ -138,11 +140,6 @@ class TaskController extends Controller
     {
         try {
             $task = Task::findOrFail($id);
-
-            // Check if task is already completed or expired
-            if ($task->status !== TaskStatus::PENDING->value) {
-                throw new InvalidArgumentException('Task is already ' . $task->status . 'Only pending tasks can be completed.');
-            }
 
             $task = $this->taskService->completeTask($task);
 

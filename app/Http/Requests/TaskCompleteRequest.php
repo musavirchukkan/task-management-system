@@ -37,10 +37,11 @@ class TaskCompleteRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $task = Task::findOrFail($this->route('id'));
-            if ($task->status !== TaskStatus::PENDING->value) {
-                $validator->errors()->add('status', 'Only pending tasks can be completed.');
+            if ($task->status->value !== TaskStatus::PENDING->value) {
+                $validator->errors()->add('status', 'Task is already ' . $task->status->value . ', Only pending tasks can be completed.');
             }
         });
+
     }
 
     /**
