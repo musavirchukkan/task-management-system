@@ -9,4 +9,4 @@ Artisan::command('inspire', function () {
 
 
 // This command will mark overdue tasks as expired
-Schedule::command('tasks:expire-overdue')->everyMinute();
+Schedule::command('tasks:expire-overdue')->hourly();
