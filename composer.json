@@ -1,11 +1,18 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "musavirchukkan/task-management-system",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "A Laravel 12 API for a Task Management System with authentication, task assignment, and task status management.",
     "keywords": [
         "laravel",
-        "framework"
+        "framework",
+        "api",
+        "task-management",
+        "project-management",
+        "todo",
+        "task",
+        "task management",
+        "authentication"
     ],
     "license": "MIT",
     "require": {
