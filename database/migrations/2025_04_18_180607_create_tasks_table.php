@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->enum('status', TaskStatus::values())->default(TaskStatus::PENDING->value);
             $table->dateTime('due_date')->nullable();
+            $table->timestamp('completed_at')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();

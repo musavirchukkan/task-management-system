@@ -32,6 +32,7 @@ class Task extends Model
      */
     protected $casts = [
         'due_date' => 'datetime',
+        'completed_at' => 'datetime',
         'status' => TaskStatus::class,
     ];
 

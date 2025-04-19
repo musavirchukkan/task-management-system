@@ -24,7 +24,7 @@ class LogTaskCompletion
         Log::channel('task_log')->info('Task completed', [
             'task_id' => $event->task->id,
             'task_title' => $event->task->title,
-            'completed_at' => now()->toDateTimeString(),
+            'completed_at' => $event->task->completed_at,
             'completed_by' => auth()->id() ?? 'system',
         ]);
     }

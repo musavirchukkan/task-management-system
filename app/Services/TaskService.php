@@ -76,6 +76,7 @@ class TaskService implements TaskServiceInterface
     {
         return DB::transaction(function () use ($task) {
             $task->status = TaskStatus::COMPLETED->value;
+            $task->completed_at = now();
             $task->save();
 
             // Trigger task completed event

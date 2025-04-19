@@ -22,6 +22,7 @@ class TaskResource extends JsonResource
             'description' => $this->description,
             'status' => $this->status,
             'due_date' => $this->due_date?->toIso8601String(),
+            'completed_at' => $this->completed_at?->toIso8601String(),
             'assigned_to' => $this->assigned_to,
             'assigned_user' => $this->whenLoaded('assignedUser', function () {
                 return new UserResource($this->assignedUser);
