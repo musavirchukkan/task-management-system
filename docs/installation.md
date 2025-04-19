@@ -12,7 +12,7 @@ This guide provides detailed instructions for setting up the Task Management Sys
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/task-management-system.git
+git clone https://github.com/musavirchukkan/task-management-system.git
 cd task-management-system
 ```
 
