@@ -1,0 +1,91 @@
+# Installation & Setup Guide
+
+This guide provides detailed instructions for setting up the Task Management System API in both development and production environments.
+
+**Navigation:**
+- [Back to Main README](../README.md)
+- [API Documentation](api.md)
+- [Architecture Documentation](architecture.md)
+- [Postman Collection Guide](postman.md)
+
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/task-management-system.git
+cd task-management-system
+```
+
+### 2. Install dependencies
+
+```bash
+composer install
+```
+
+### 3. Configure environment
+
+Copy the `.env.example` file to `.env` and update the database settings:
+
+```bash
+cp .env.example .env
+```
+
+Update the following in your `.env` file:
+
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=task_management
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+
+
+QUEUE_CONNECTION=database
+
+
+MAIL_MAILER=smtp
+MAIL_SCHEME=null
+MAIL_HOST=127.0.0.1
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_FROM_ADDRESS="hello@example.com"
+```
+
+### 4. Generate application key
+
+```bash
+php artisan key:generate
+```
+
+### 5. Run migrations
+
+```bash
+php artisan migrate
+```
+
+### 6. Create queue tables
+
+```bash
+php artisan queue:table
+php artisan migrate
+```
+
+### 7. Start the development server
+
+```bash
+php artisan serve
+```
+
+### 8. Start the queue worker (in a separate terminal)
+
+```bash
+php artisan queue:work
+```
+
+### 9. Run the scheduler (in a separate terminal, for development)
+
+```bash
+php artisan schedule:work
+```
