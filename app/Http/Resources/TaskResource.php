@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\TaskStatus;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -39,7 +40,7 @@ class TaskResource extends JsonResource
                 'assign' => [
                     'href' => route('tasks.assign', $this->id),
                 ],
-                'complete' => $this->when($this->status === Task::STATUS_PENDING, [
+                'complete' => $this->when($this->status === TaskStatus::PENDING->value, [
                     'href' => route('tasks.complete', $this->id),
                 ]),
             ],

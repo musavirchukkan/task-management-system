@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\TaskStatus;
 use App\Models\Task;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
@@ -11,8 +12,6 @@ class TaskCompleteRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
-     *
-     * @return bool
      */
     public function authorize(): bool
     {
@@ -33,15 +32,12 @@ class TaskCompleteRequest extends FormRequest
 
     /**
      * Configure the validator instance.
-     *
-     * @param \Illuminate\Validation\Validator $validator
-     * @return void
      */
-    public function withValidator($validator)
+    public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
             $task = Task::findOrFail($this->route('id'));
-            if ($task->status !== Task::STATUS_PENDING) {
+            if ($task->status !== TaskStatus::PENDING->value) {
                 $validator->errors()->add('status', 'Only pending tasks can be completed.');
             }
         });
@@ -50,12 +46,9 @@ class TaskCompleteRequest extends FormRequest
     /**
      * Handle a failed validation attempt.
      *
-     * @param  \Illuminate\Contracts\Validation\Validator  $validator
-     * @return void
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws \Illuminate\Http\Exceptions\HttpResponseException
      */
-    protected function failedValidation(Validator $validator)
+    protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(
             response()->json([
@@ -65,14 +58,12 @@ class TaskCompleteRequest extends FormRequest
         );
     }
 
-     /**
+    /**
      * Handle a failed authorization attempt.
-     *
-     * @return void
      *
      * @throws \Illuminate\Http\Exceptions\HttpResponseException
      */
-    protected function failedAuthorization()
+    protected function failedAuthorization(): void
     {
         throw new HttpResponseException(
             response()->json([

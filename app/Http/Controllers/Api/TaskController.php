@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskAssignRequest;
 use App\Http\Requests\TaskCompleteRequest;
@@ -65,6 +66,12 @@ class TaskController extends Controller
             if (!isset($data['created_by'])) {
                 $data['created_by'] = $request->user()->id;
             }
+
+            // Set default status if not provided
+            if (!isset($data['status'])) {
+                $data['status'] = TaskStatus::default()->value;
+            }
+
 
             $task = $this->taskService->createTask($data);
 
@@ -131,6 +138,12 @@ class TaskController extends Controller
     {
         try {
             $task = Task::findOrFail($id);
+
+            // Check if task is already completed or expired
+            if ($task->status !== TaskStatus::PENDING->value) {
+                throw new InvalidArgumentException('Task is already ' . $task->status . 'Only pending tasks can be completed.');
+            }
+
             $task = $this->taskService->completeTask($task);
 
             return response()->json([

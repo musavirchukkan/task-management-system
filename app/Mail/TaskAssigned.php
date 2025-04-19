@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Enums\TaskStatus;
 use App\Models\Task;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -53,7 +54,7 @@ class TaskAssigned extends Mailable
             'No due date';
 
         // Get status with proper capitalization
-        $status = ucfirst($this->task->status ?? 'pending');
+        $status = ucfirst($this->task->status ?? TaskStatus::default()->value);
 
         // Assign priority based on due date proximity if not explicitly set
         $priority = $this->task->priority ?? $this->calculatePriority();

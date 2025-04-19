@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TaskStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +18,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
-            $table->enum('status', ['pending', 'completed', 'expired'])->default('pending');
+            $table->enum('status', TaskStatus::values())->default(TaskStatus::PENDING->value);
             $table->dateTime('due_date')->nullable();
             $table->timestamps();
             $table->softDeletes();

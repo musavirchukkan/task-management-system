@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TaskStatus;
 use App\Events\TaskCompleted;
 use App\Jobs\SendTaskAssignmentNotification;
 use App\Models\Task;
@@ -22,13 +23,8 @@ class TaskService implements TaskServiceInterface
      */
     public function createTask(array $data): Task
     {
-        // Set default status if not provided
-        if (!isset($data['status'])) {
-            $data['status'] = Task::STATUS_PENDING;
-        }
-
         $task = DB::transaction(function () use ($data) {
-            return  Task::create($data);
+            return Task::create($data);
         });
 
         if (isset($data['assigned_to'])) {
@@ -38,7 +34,7 @@ class TaskService implements TaskServiceInterface
 
         $task->load('assignedUser', 'createdUser');
 
-        if ($user) {
+        if (isset($user)) {
             // Dispatch job to send notification
             SendTaskAssignmentNotification::dispatch($task, $user);
         }
@@ -78,12 +74,8 @@ class TaskService implements TaskServiceInterface
      */
     public function completeTask(Task $task): Task
     {
-        if ($task->status !== Task::STATUS_PENDING) {
-            throw new \InvalidArgumentException('Only pending tasks can be completed.');
-        }
-
         return DB::transaction(function () use ($task) {
-            $task->status = Task::STATUS_COMPLETED;
+            $task->status = TaskStatus::COMPLETED->value;
             $task->save();
 
             // Trigger task completed event
@@ -105,11 +97,7 @@ class TaskService implements TaskServiceInterface
         $query = Task::query();
 
         // Apply filters
-        if (isset($filters['status']) && in_array($filters['status'], [
-            Task::STATUS_PENDING,
-            Task::STATUS_COMPLETED,
-            Task::STATUS_EXPIRED
-        ])) {
+        if (isset($filters['status']) && in_array($filters['status'], TaskStatus::values())) {
             $query->where('status', $filters['status']);
         }
 
@@ -156,7 +144,7 @@ class TaskService implements TaskServiceInterface
 
         return DB::transaction(function () use ($overdueTasks) {
             foreach ($overdueTasks as $task) {
-                $task->status = Task::STATUS_EXPIRED;
+                $task->status = TaskStatus::EXPIRED->value;
                 $task->save();
 
                 Log::channel('task_log')->info("Task #{$task->id} marked as expired (due date: {$task->due_date})");

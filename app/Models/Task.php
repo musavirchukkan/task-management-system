@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,13 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Task extends Model
 {
     use HasFactory;
-
-    /**
-     * Task status constants.
-     */
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_COMPLETED = 'completed';
-    public const STATUS_EXPIRED = 'expired';
 
     /**
      * The attributes that are mass assignable.
@@ -38,6 +32,7 @@ class Task extends Model
      */
     protected $casts = [
         'due_date' => 'datetime',
+        'status' => TaskStatus::class,
     ];
 
     /**
@@ -61,7 +56,7 @@ class Task extends Model
      */
     public function scopePending($query)
     {
-        return $query->where('status', self::STATUS_PENDING);
+        return $query->where('status', TaskStatus::PENDING->value);
     }
 
     /**
@@ -69,7 +64,7 @@ class Task extends Model
      */
     public function scopeCompleted($query)
     {
-        return $query->where('status', self::STATUS_COMPLETED);
+        return $query->where('status', TaskStatus::COMPLETED->value);
     }
 
     /**
@@ -77,7 +72,7 @@ class Task extends Model
      */
     public function scopeExpired($query)
     {
-        return $query->where('status', self::STATUS_EXPIRED);
+        return $query->where('status', TaskStatus::EXPIRED->value);
     }
 
     /**
@@ -85,7 +80,7 @@ class Task extends Model
      */
     public function scopeOverdue($query)
     {
-        return $query->where('status', self::STATUS_PENDING)
+        return $query->where('status', TaskStatus::PENDING->value)
                     ->whereNotNull('due_date')
                     ->where('due_date', '<', now());
     }
