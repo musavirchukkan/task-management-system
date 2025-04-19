@@ -6,9 +6,15 @@ use App\Models\Task;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class TaskAssignRequest extends FormRequest
 {
+    /**
+     * The task instance
+     */
+    protected ?Task $task = null;
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -16,9 +22,14 @@ class TaskAssignRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $task = Task::findOrFail($this->route('id'));
-        // Check if the authenticated user can update this task
-        return $this->user()->can('update', $task);
+        try {
+            $this->task = Task::findOrFail($this->route('id'));
+            // Check if the authenticated user can update this task
+            return $this->user()->can('update', $this->task);
+        } catch (ModelNotFoundException $e) {
+            // Task not found, returning false will trigger failedAuthorization
+            return false;
+        }
     }
 
     /**
@@ -62,6 +73,32 @@ class TaskAssignRequest extends FormRequest
                 'message' => 'Validation errors',
                 'errors' => $validator->errors(),
             ], 422)
+        );
+    }
+
+    /**
+     * Handle a failed authorization attempt.
+     *
+     * @throws \Illuminate\Http\Exceptions\HttpResponseException
+     */
+    protected function failedAuthorization(): void
+    {
+        // If we tried to find the task but couldn't, return a more specific error
+        if (!$this->task) {
+            throw new HttpResponseException(
+                response()->json([
+                    'message' => 'Task not found',
+                    'error' => 'task_not_found'
+                ], 404)
+            );
+        }
+
+        // Otherwise it's a regular authorization error
+        throw new HttpResponseException(
+            response()->json([
+                'message' => 'You are not authorized to assign this task.',
+                'error' => 'unauthorized_action'
+            ], 403)
         );
     }
 }

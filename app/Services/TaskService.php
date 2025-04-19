@@ -81,6 +81,8 @@ class TaskService implements TaskServiceInterface
             // Trigger task completed event
             event(new TaskCompleted($task));
 
+            $task->load('assignedUser', 'createdUser');
+
             return $task;
         });
     }
