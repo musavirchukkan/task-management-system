@@ -258,16 +258,22 @@ Models represent database tables and handle:
 ### Middleware
 
 Custom middleware for:
-- Request execution time logging
+- Request execution time logging (stored in `storage/logs/request/laravel-{date}.log`)
 - Additional request validation
 - Response transformation
+
+The `RequestExecutionTimeLogger` middleware captures how long each API request takes to process and logs this information to a dedicated request log file, making it easy to identify performance bottlenecks.
+
 
 ### Events and Listeners
 
 Event-driven architecture for:
 - Task status changes
 - User notifications
-- System logging
+- System logging (task completions are logged to `storage/logs/task/laravel-{date}.log`)
+
+The system uses Laravel's event system to decouple actions from their side effects. For example, when a task is completed, the `TaskCompleted` event is fired, which then triggers the `LogTaskCompletion` listener, writing detailed information to a dedicated task log file.
+
 
 ### Jobs and Queues
 
@@ -282,3 +288,35 @@ Scheduled tasks for:
 - Expiring overdue tasks
 - Generating reports
 - System maintenance
+
+
+## API Security
+
+The Task Management System implements a comprehensive security approach:
+
+### Authentication
+
+- **Laravel Sanctum**: Used for API token authentication
+- **Token-based Authentication**: Each API request (except registration and login) requires a valid token
+- **Token Management**: Tokens are issued at login and invalidated at logout
+- **Token Scopes**: Can be implemented to restrict access to specific endpoints
+
+### Authorization
+
+- **Laravel Policies**: The `TaskPolicy` defines rules for who can perform specific actions on tasks
+- **Role-based Access**: Users can only perform actions appropriate to their role:
+  - Users can only view and modify their own tasks or tasks assigned to them
+  - Task creators have additional privileges over the tasks they created
+
+### Request Validation
+
+- **Form Request Classes**: Each API endpoint uses dedicated request validation classes
+- **Input Sanitization**: All user input is validated and sanitized before processing
+- **Custom Validation Rules**: Applied for task-specific validations (e.g., due dates must be in the future)
+
+### API Security Best Practices
+
+- **CSRF Protection**: Not required for token-based APIs (as per Laravel documentation)
+- **Rate Limiting**: Can be implemented using Laravel's built-in rate limiting middleware
+- **Response Headers**: Security headers are set in the web server configuration
+- **Logging**: Security-related events are logged for audit purposes

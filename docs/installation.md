@@ -89,3 +89,56 @@ php artisan queue:work
 ```bash
 php artisan schedule:work
 ```
+## Logging
+
+The Task Management System maintains separate log files for different types of activities:
+
+- **Request Logs**: Execution time and request details are logged to:
+  ```
+  storage/logs/request/request_time-{date}.log
+  ```
+
+- **Task Activity Logs**: Task completions and other task-related events are logged to:
+  ```
+  storage/logs/task/task-{date}.log
+  ```
+
+### Log Configuration
+
+To configure custom log channels, add the following to your `.env` file:
+
+```
+LOG_CHANNEL=stack
+LOG_REQUEST_CHANNEL=request
+LOG_TASK_CHANNEL=task
+```
+
+Make sure the corresponding directories exist and are writable:
+
+```bash
+mkdir -p storage/logs/request
+mkdir -p storage/logs/task
+chmod -R 775 storage/logs
+```
+
+The system will automatically use these channels for the appropriate log types.
+
+## Troubleshooting
+
+### Common Installation Issues
+
+- **Database connection error**: Check your database credentials in `.env` file
+- **Permission denied errors**: Make sure storage and bootstrap/cache directories are writable
+- **Queue worker not processing jobs**: Verify that the queue connection is properly configured
+- **Missing logs**: Ensure log directories exist and have proper permissions
+
+### Debugging
+
+In development, you can enable more verbose logging by setting:
+
+```
+APP_DEBUG=true
+LOG_LEVEL=debug
+```
+
+For API request debugging, consider using the included Postman collection with the proper environment variables set.
