@@ -6,7 +6,7 @@ A Laravel 12 API for a Task Management System with authentication, task assignme
 
 This project's documentation is split into multiple files for easier navigation:
 
-- [Installation & Setup Guide](docs/installation.md) - Instructions for development and production setup
+- [Installation & Setup Guide](docs/installation.md) - Instructions for development setup
 - [API Documentation](docs/api.md) - Complete API reference with examples and error handling
 - [Architecture](docs/architecture.md) - System architecture, flow diagrams, and design principles
 - [Postman Collection Guide](docs/postman.md) - How to use the included Postman collection
